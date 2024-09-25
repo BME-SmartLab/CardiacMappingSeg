@@ -4,6 +4,7 @@ huggingface-hub==0.13.0
 kaleido==0.2.1
 mmcv==1.7.1
 mmsegmentation==0.30.0
+omegaconf==2.3.0
 opencv-python-headless==4.7.0.68
 opencv-python==4.7.0.68
 pypdf2==1.26.0

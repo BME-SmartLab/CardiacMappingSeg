@@ -3,7 +3,8 @@ seed: 42
 num_workers: 8
 experiment_name: "Baseline"
 
-dataset_root: "YOUR_PATH_TO_DATASET"
+dataset_root: "/data/se"  # YOUR_PATH_TO_DATASET
+norm_max_pixel_value: 1.0
 # The dataset contains mapping images and mri images that are used to create the mapping images.
 # These configs determine which images to use for testing and valindation: only mapping images or all (including mappings)
 val_mapping_only: True 

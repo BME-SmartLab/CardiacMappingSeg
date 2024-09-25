@@ -42,7 +42,7 @@ ssh: build
 	-dt --rm \
 	--shm-size 1G \
 	-p $(host_ssh_port):22 \
-	-e NVIDIA_VISIBLE_DEVICES=1 \
+	-e NVIDIA_VISIBLE_DEVICES=0,1 \
 	--name $(container_name) \
 	-v $(shell pwd):/workspace \
 	-v $(data_path):/data/se:ro \

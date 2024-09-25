@@ -39,10 +39,12 @@ def generate_prediction_pdfs(checkpoint_path: str,
     model = CardiacSegmentation.load_from_checkpoint(checkpoint_path)
     model.eval()
 
+    norm_max_pixel_value = model.config["norm_max_pixel_value"]
+
     test_augs = []
     if pad_to is not None:
         test_augs.append(A.PadIfNeeded(pad_to,pad_to, border_mode=cv2.BORDER_CONSTANT, value=0, position='top_left'))
-    test_augs.append(A.Normalize(mean=(DATASET_MEAN,), std=(DATASET_STD,)))
+    test_augs.append(A.Normalize(mean=(DATASET_MEAN,), std=(DATASET_STD,), max_pixel_value=norm_max_pixel_value),)
     test_aug = A.Compose(test_augs)
 
     ds = MappingDatasetAlbu(dataset_root,

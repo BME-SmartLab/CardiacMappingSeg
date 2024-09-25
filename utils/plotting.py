@@ -142,15 +142,21 @@ def plot_iou_histograms(per_class_ious, labels, output_path=".", bins=50):
     plt.savefig(os.path.join(output_path, "iou_histogram_per_class.pdf"), bbox_inches='tight')
     plt.close()
 
-def plot_confmat(confmat, labels, output_path="."):
+def plot_confmat(
+    confmat,
+    labels=["Background", "Epicarcical(MYO)", "Endocardial(LV)"],
+    output_path=".",
+):
     # normalize over the targets
     counts = np.sum(confmat, axis=1, keepdims=True)
     norm_conf = confmat / counts
 
     plt.figure()
     sns.heatmap(norm_conf, annot=True, cmap=plt.cm.Blues, xticklabels=labels, yticklabels=labels)
-    plt.xlabel('Predicted Label')
-    plt.ylabel('True label')
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True label")
     plt.title("Pixel-level Confusion Matrix")
-    plt.savefig(os.path.join(output_path,'confmat.pdf'))
+    if not output_path.endswith(".pdf"):
+        output_path = os.path.join(output_path, "confmat.pdf")
+    plt.savefig(output_path)
     plt.close()

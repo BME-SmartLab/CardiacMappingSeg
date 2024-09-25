@@ -27,6 +27,8 @@ class CardiacSegmentation(pl.LightningModule):
         self.save_hyperparameters()
         self.config = config
 
+        self.norm_max_pixel_value = self.config.get("norm_max_pixel_value", 1.0)
+
         self.num_classes = 3
         self.class_labels = ["background", "epicardial", "endocardial"]
 
@@ -74,7 +76,7 @@ class CardiacSegmentation(pl.LightningModule):
             A.RandomResizedCrop(224, 224),
             # A.HorizontalFlip(p=0.5),
             A.RandomBrightnessContrast(p=0.2),
-            A.Normalize(mean=(DATASET_MEAN,), std=(DATASET_STD,)),
+            A.Normalize(mean=(DATASET_MEAN,), std=(DATASET_STD,), max_pixel_value=self.norm_max_pixel_value),
         ])
         self.train_dataset.transforms = train_aug
 
@@ -93,7 +95,7 @@ class CardiacSegmentation(pl.LightningModule):
     def val_dataloader(self):
         val_aug = A.Compose([
             A.RandomResizedCrop(224, 224),
-            A.Normalize(mean=(DATASET_MEAN,), std=(DATASET_STD,)),
+            A.Normalize(mean=(DATASET_MEAN,), std=(DATASET_STD,), max_pixel_value=self.norm_max_pixel_value),
         ])
         self.val_dataset.transforms = val_aug
 
@@ -215,7 +217,7 @@ class CardiacSegmentation(pl.LightningModule):
             print("=============================")
             self.train_dataset.to_mapping_only()
             self.trainer.reset_train_dataloader(self) # Very important line! If omitted, the trainer won't call the validation loop (without any warning or error!!!)
-        return super().on_epoch_start()
+        # return super().on_epoch_start()
 
     def on_after_backward(self) -> None:
         # Cancel gradients for the encoder in the first few epochs
@@ -262,9 +264,18 @@ def main():
     trainer.fit(pipeline)
 
     print("=============================")
-    print("Running predictions on the test dataset with the best model ")
     from supervised_segmentation.inference import generate_prediction_pdfs
-    results_df = generate_prediction_pdfs(checkpoint_path=checkpoint.best_model_path, 
+
+    if checkpoint.best_model_path == '':
+        model_to_eval = checkpoint.last_model_path
+        print(f"Running predictions on the test dataset with the last model {model_to_eval}")
+    else:
+        model_to_eval = checkpoint.best_model_path
+        print(f"Running predictions on the test dataset with the best model {model_to_eval}")
+
+    
+    results_df = generate_prediction_pdfs(checkpoint_path=model_to_eval, 
+                                          dataset_root=config["dataset_root"],
                                           output_folder=tb_logger.log_dir,
                                           remove_individual_pdfs=True,
                                           filename_suffix=f'_ep={trainer.current_epoch:03d}')
